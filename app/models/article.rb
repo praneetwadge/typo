@@ -119,8 +119,36 @@ class Article < Content
 
       eval(list_function.join('.'))
     end
-
+    
+  
   end
+ #HW5A 
+  def merge_with(merging_id)
+      if Article.exists?(merging_id)
+        merging_article = Article.find(merging_id)  
+        self_feedback = Feedback.find_all_by_article_id(self.id) #get comments of both articles
+        merging_feedback = Feedback.find_all_by_article_id(merging_id)
+
+        merged_body = self.body + merging_article.body    #merges body of two articles
+        finishedart = Article.create(:title => self.title, :author=>self.author, :body=>merged_body, :published=>true)       
+        
+        finid = finishedart.id                            #gets id of bodymerged comment and sticks it previous articles' comments
+        self_feedback.each do |comm|
+          comm.article_id = finid
+          comm.save
+        end         
+        merging_feedback.each do |comm|
+          comm.article_id = finid
+          comm.save
+        end           
+        Article.destroy(self.id)			#destroy old crap
+        Article.destroy(merging_id)
+        finishedart  
+      else
+        false
+      end  	
+  end 
+
 
   def year_url
     published_at.year.to_s
